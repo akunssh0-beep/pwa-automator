@@ -1,0 +1,616 @@
+```html
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PWA Automator Pro - it.adi.p</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        playstore: '#01875f',
+                        chatgpt: {
+                            bg: '#050509',
+                            card: '#171721',
+                            accent: '#3b82f6'
+                        },
+                        ios: {
+                            blue: '#007AFF',
+                            system: '#F2F2F7'
+                        }
+                    },
+                    borderRadius: {
+                        'ios': '1.25rem',
+                        '4xl': '2rem',
+                        '5xl': '3rem',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px rgba(59, 130, 246, 0.2)' },
+                            '100%': { boxShadow: '0 0 20px rgba(59, 130, 246, 0.6)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+            scroll-behavior: smooth;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .dark .glass {
+            background: rgba(23, 23, 33, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .bg-mesh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-color: #f8fafc;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
+        }
+        .dark .bg-mesh {
+            background-color: #050509;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.3) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 78, 59, 0.2) 0px, transparent 50%);
+        }
+
+        .ios-input-group {
+            @apply divide-y divide-slate-200 dark:divide-white/5 bg-white dark:bg-white/5 rounded-3xl overflow-hidden shadow-sm;
+        }
+
+        .btn-playstore {
+            background: #01875f;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-playstore:active {
+            transform: scale(0.95);
+            background: #016d4d;
+        }
+
+        .preview-phone {
+            width: 220px;
+            height: 440px;
+            border: 8px solid #1e293b;
+            border-radius: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            background: #f1f5f9;
+        }
+        .dark .preview-phone { background: #0f172a; border-color: #334155; }
+
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .toast-entrance {
+            animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="text-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-500">
+
+    <div class="bg-mesh"></div>
+
+    <!-- Navigation Header -->
+    <nav class="sticky top-0 z-50 glass border-b border-white/20 dark:border-white/5">
+        <div class="max-w-5xl mx-auto px-6 h-18 flex justify-between items-center py-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg animate-float">
+                    <i data-lucide="zap" class="w-6 h-6 text-white fill-white"></i>
+                </div>
+                <div class="hidden sm:block">
+                    <h2 class="font-extrabold text-lg leading-none tracking-tight">it.adi.p</h2>
+                    <span class="text-[10px] text-blue-500 font-black uppercase tracking-tighter">Automator Pro</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button id="installToolBtn" class="hidden px-5 py-2.5 btn-playstore text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-2">
+                    <i data-lucide="download-cloud" class="w-4 h-4"></i> INSTALL
+                </button>
+                <button id="themeToggle" class="w-11 h-11 rounded-full glass flex items-center justify-center text-slate-500 dark:text-yellow-400 transition-all hover:scale-110 active:scale-90">
+                    <i data-lucide="moon" id="moonIcon" class="w-5 h-5"></i>
+                    <i data-lucide="sun" id="sunIcon" class="w-5 h-5 hidden"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+        
+        <!-- Left Side: Form & Controls (Col 7) -->
+        <div class="lg:col-span-7 space-y-10">
+            
+            <header class="space-y-4">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-widest border border-blue-500/20">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                    Verified System v4.0
+                </div>
+                <h1 class="text-5xl font-black tracking-tighter leading-tight dark:text-white">
+                    Ubah Web Anda <br/> Menjadi <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-500">Aplikasi Pro.</span>
+                </h1>
+                <p class="text-slate-500 dark:text-slate-400 text-lg font-medium max-w-md">Injeksi Service Worker, Manifest, dan Fitur Auto-Update secara instan.</p>
+            </header>
+
+            <div class="glass rounded-5xl p-8 shadow-2xl space-y-8 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full -mr-16 -mt-16"></div>
+                
+                <!-- iOS Style Input Group -->
+                <div class="space-y-2">
+                    <label class="text-xs font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 ml-2">App Configuration</label>
+                    <div class="ios-input-group border border-slate-200 dark:border-white/5">
+                        <div class="flex items-center px-5 py-4 gap-4 group">
+                            <i data-lucide="at-sign" class="w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                            <input type="text" id="appName" placeholder="Nama Aplikasi" value="My Awesome App" 
+                                class="bg-transparent w-full outline-none font-semibold text-slate-700 dark:text-white placeholder:text-slate-300">
+                        </div>
+                        <div class="flex items-center px-5 py-4 gap-4">
+                            <i data-lucide="palette" class="w-5 h-5 text-slate-400"></i>
+                            <div class="flex-1 text-sm font-bold text-slate-500">Warna Aksen</div>
+                            <div class="flex items-center gap-3">
+                                <span id="colorHex" class="text-xs font-mono text-slate-400">#3B82F6</span>
+                                <input type="color" id="themeColor" value="#3b82f6" class="w-8 h-8 rounded-lg cursor-pointer border-none bg-transparent">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 ml-2">Update Strategy</label>
+                    <div class="relative">
+                        <select id="updateStrategy" class="w-full glass border border-slate-200 dark:border-white/5 rounded-3xl px-6 py-5 outline-none font-bold text-sm appearance-none cursor-pointer focus:ring-4 ring-blue-500/10 transition-all">
+                            <option value="auto-refresh">🔥 Auto Refresh (Instan)</option>
+                            <option value="bg-update">🌙 Background (Sesi Berikutnya)</option>
+                            <option value="cache-first">📦 Cache First (Offline Maksimal)</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- Modern Upload Zone -->
+                <div id="dropZone" class="group relative border-2 border-dashed border-slate-200 dark:border-white/10 rounded-4xl p-12 text-center transition-all duration-500 hover:border-blue-500/50 hover:bg-blue-500/5 overflow-hidden">
+                    <input type="file" id="htmlInput" accept=".html" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
+                    <div id="uploadContent" class="space-y-4">
+                        <div class="w-20 h-20 bg-blue-500/10 dark:bg-blue-500/20 rounded-3xl flex items-center justify-center mx-auto shadow-inner group-hover:scale-110 transition-transform duration-500">
+                            <i data-lucide="file-up" class="w-10 h-10 text-blue-500 animate-pulse-slow"></i>
+                        </div>
+                        <div>
+                            <p class="text-lg font-bold dark:text-white">Pilih atau Seret File HTML</p>
+                            <p class="text-xs text-slate-400 mt-2 font-medium tracking-wide">Script PWA Otomatis akan segera disuntikkan</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generate Button -->
+                <div id="actionArea" class="hidden">
+                    <button onclick="processAndDownload()" class="btn-playstore w-full py-6 rounded-3xl text-white font-black text-lg shadow-2xl shadow-emerald-500/20 flex items-center justify-center gap-4 group">
+                        <i data-lucide="sparkles" class="w-6 h-6 group-hover:rotate-12 transition-transform"></i>
+                        GENERATE PWA ZIP
+                    </button>
+                    
+                    <div id="progressWrapper" class="hidden mt-6 space-y-2">
+                        <div class="flex justify-between text-[10px] font-black uppercase tracking-tighter text-blue-500">
+                            <span>Processing Assets</span>
+                            <span id="percentText">0%</span>
+                        </div>
+                        <div class="h-2 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+                            <div id="progressBar" class="h-full bg-blue-500 w-0 transition-all duration-300"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Right Side: Live Preview (Col 5) -->
+        <div class="lg:col-span-5 flex flex-col items-center sticky top-28">
+            <div class="relative">
+                <!-- Glowing Aura -->
+                <div id="glowAura" class="absolute inset-0 bg-blue-500/20 blur-[100px] rounded-full transition-colors duration-1000"></div>
+                
+                <!-- Phone Mockup -->
+                <div class="preview-phone shadow-2xl border-slate-900 dark:border-slate-800 z-10 animate-float">
+                    <!-- Status Bar -->
+                    <div class="h-8 flex justify-between px-6 items-end">
+                        <span class="text-[10px] font-bold text-slate-400">9:41</span>
+                        <div class="flex gap-1 items-center">
+                            <div class="w-3 h-2 bg-slate-400 rounded-[1px]"></div>
+                            <div class="w-1 h-1 bg-slate-400 rounded-full"></div>
+                        </div>
+                    </div>
+
+                    <!-- Screen Content -->
+                    <div class="p-6 h-full flex flex-col items-center justify-center text-center">
+                        <div id="previewIcon" class="w-24 h-24 bg-blue-500 rounded-[2rem] shadow-2xl flex items-center justify-center mb-6 transition-all duration-300">
+                            <i data-lucide="layout" class="w-12 h-12 text-white"></i>
+                        </div>
+                        <h3 id="previewTitle" class="text-xl font-black tracking-tight dark:text-white mb-2">My Awesome App</h3>
+                        <p class="text-[10px] uppercase font-black text-slate-400 tracking-widest">Progressive Web App</p>
+                        
+                        <!-- Android Bottom Nav Mockup -->
+                        <div class="absolute bottom-10 left-0 w-full flex justify-around opacity-20">
+                            <div class="w-8 h-8 rounded-full bg-slate-400"></div>
+                            <div class="w-8 h-8 rounded-full bg-slate-400"></div>
+                            <div class="w-8 h-8 rounded-full bg-slate-400"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Badge Overlay -->
+                <div class="absolute -bottom-6 -right-6 glass p-4 rounded-3xl shadow-xl z-20 border border-emerald-500/20">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-emerald-500/10 rounded-full flex items-center justify-center">
+                            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i>
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-black text-slate-400 uppercase leading-none">Status</p>
+                            <p class="text-xs font-bold text-emerald-500">Ready to Ship</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center space-y-4">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 justify-center">
+                    <i data-lucide="info" class="w-3 h-3"></i> Tampilan di Android Desktop
+                </p>
+                <div class="flex gap-3">
+                    <div class="px-4 py-2 glass rounded-2xl text-[10px] font-bold text-slate-500">SSL READY</div>
+                    <div class="px-4 py-2 glass rounded-2xl text-[10px] font-bold text-slate-500">AUTO-SW</div>
+                    <div class="px-4 py-2 glass rounded-2xl text-[10px] font-bold text-slate-500">IOS SUPPORT</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="max-w-5xl mx-auto px-6 py-20 text-center space-y-6">
+        <div class="h-px w-full bg-gradient-to-r from-transparent via-slate-200 dark:via-white/5 to-transparent"></div>
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Built for Developers by <span class="text-slate-900 dark:text-white underline decoration-blue-500 underline-offset-4">it.adi.p</span></p>
+        <div class="flex justify-center gap-6 text-slate-400">
+            <a href="#" class="hover:text-blue-500 transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+            <a href="#" class="hover:text-blue-500 transition-colors"><i data-lucide="twitter" class="w-5 h-5"></i></a>
+            <a href="#" class="hover:text-blue-500 transition-colors"><i data-lucide="mail" class="w-5 h-5"></i></a>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] hidden">
+        <div class="toast-entrance glass px-6 py-4 rounded-3xl shadow-2xl border border-white/20 flex items-center gap-4 min-w-[300px]">
+            <div id="toastIcon" class="w-10 h-10 rounded-2xl flex items-center justify-center"></div>
+            <div class="flex-1">
+                <p id="toastTitle" class="text-xs font-black uppercase tracking-tight dark:text-white leading-none mb-1"></p>
+                <p id="toastMsg" class="text-[11px] font-medium text-slate-500"></p>
+            </div>
+            <button onclick="hideToast()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide
+        lucide.createIcons();
+
+        // Constants & State
+        const htmlInput = document.getElementById('htmlInput');
+        const dropZone = document.getElementById('dropZone');
+        const actionArea = document.getElementById('actionArea');
+        const themeColorInput = document.getElementById('themeColor');
+        const appNameInput = document.getElementById('appName');
+        const previewTitle = document.getElementById('previewTitle');
+        const previewIcon = document.getElementById('previewIcon');
+        const glowAura = document.getElementById('glowAura');
+        const progressBar = document.getElementById('progressBar');
+        const progressWrapper = document.getElementById('progressWrapper');
+        const percentText = document.getElementById('percentText');
+
+        let selectedFiles = [];
+
+        // Real-time Preview Sync
+        appNameInput.addEventListener('input', (e) => {
+            previewTitle.textContent = e.target.value || "My App";
+        });
+
+        themeColorInput.addEventListener('input', (e) => {
+            const color = e.target.value;
+            document.getElementById('colorHex').textContent = color.toUpperCase();
+            previewIcon.style.backgroundColor = color;
+            glowAura.style.backgroundColor = color + "40"; // 25% opacity
+        });
+
+        // Theme Toggle Logic
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            document.getElementById('moonIcon').classList.toggle('hidden', isDark);
+            document.getElementById('sunIcon').classList.toggle('hidden', !isDark);
+        });
+
+        // File Selection
+        htmlInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+        ['dragenter', 'dragover'].forEach(name => {
+            dropZone.addEventListener(name, (e) => {
+                e.preventDefault();
+                dropZone.classList.add('bg-blue-500/5', 'border-blue-500');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(name => {
+            dropZone.addEventListener(name, (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('bg-blue-500/5', 'border-blue-500');
+            });
+        });
+
+        dropZone.addEventListener('drop', (e) => handleFiles(e.dataTransfer.files));
+
+        function handleFiles(files) {
+            const htmlFiles = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.html'));
+            if (htmlFiles.length > 0) {
+                selectedFiles = htmlFiles;
+                document.getElementById('uploadContent').innerHTML = `
+                    <div class="w-20 h-20 bg-emerald-500/10 rounded-3xl flex items-center justify-center mx-auto shadow-inner animate-ios-pop">
+                        <i data-lucide="check" class="w-10 h-10 text-emerald-500"></i>
+                    </div>
+                    <div>
+                        <p class="text-lg font-black text-emerald-600 dark:text-emerald-400">${selectedFiles.length} File Terpilih</p>
+                        <p class="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-widest">Siap memproses integrasi PWA</p>
+                    </div>
+                `;
+                actionArea.classList.remove('hidden');
+                lucide.createIcons();
+                showToast("Success", "File berhasil dimuat.", "success");
+            } else {
+                showToast("Error", "Hanya file .html yang diizinkan.", "error");
+            }
+        }
+
+        function showToast(title, msg, type) {
+            const toast = document.getElementById('toast');
+            const iconBox = document.getElementById('toastIcon');
+            
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastMsg').textContent = msg;
+            
+            if(type === 'success') {
+                iconBox.className = "w-10 h-10 rounded-2xl flex items-center justify-center bg-emerald-500/10 text-emerald-500";
+                iconBox.innerHTML = '<i data-lucide="check" class="w-5 h-5"></i>';
+            } else {
+                iconBox.className = "w-10 h-10 rounded-2xl flex items-center justify-center bg-red-500/10 text-red-500";
+                iconBox.innerHTML = '<i data-lucide="alert-circle" class="w-5 h-5"></i>';
+            }
+            
+            toast.classList.remove('hidden');
+            lucide.createIcons();
+            
+            setTimeout(hideToast, 4000);
+        }
+
+        function hideToast() {
+            document.getElementById('toast').classList.add('hidden');
+        }
+
+        // Logic Utama (Pertahankan semua fungsi lama)
+        async function processAndDownload() {
+            try {
+                const appName = appNameInput.value.trim() || "My App";
+                const themeColor = themeColorInput.value;
+                const dynamicVersion = new Date().getTime(); 
+                const strategy = document.getElementById('updateStrategy').value;
+                const safeName = appName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                
+                // Show Progress
+                progressWrapper.classList.remove('hidden');
+                updateProgress(20, "Analyzing files...");
+
+                const zip = new JSZip();
+                const appFolder = zip.folder(safeName);
+
+                const pwaHeader = `
+    <!-- PWA Optimized by it.adi.p Automator -->
+    <meta name="theme-color" content="${themeColor}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json?v=${dynamicVersion}">
+    <link rel="apple-touch-icon" href="icon-192.png">`;
+
+                const pwaBody = `
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js?v=${dynamicVersion}').then(reg => {
+            console.log('PWA: ServiceWorker Registered');
+            ${strategy === 'auto-refresh' ? `
+            reg.onupdatefound = () => {
+              const installingWorker = reg.installing;
+              installingWorker.onstatechange = () => {
+                if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  window.location.reload();
+                }
+              };
+            };` : ''}
+          });
+        });
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (refreshing) return;
+          refreshing = true;
+          window.location.reload();
+        });
+      }
+    <\/script>`;
+
+                updateProgress(50, "Injecting SW & Manifest...");
+
+                const cacheAssets = ['./', './index.html', './manifest.json'];
+                let entryPoint = "index.html";
+
+                for (const file of selectedFiles) {
+                    let content = await file.text();
+                    const headInject = /<\/head>/i;
+                    const bodyInject = /<\/body>/i;
+
+                    content = headInject.test(content) ? content.replace(headInject, pwaHeader + '\n</head>') : pwaHeader + content;
+                    content = bodyInject.test(content) ? content.replace(bodyInject, pwaBody + '\n</body>') : content + pwaBody;
+
+                    appFolder.file(file.name, content);
+                    if (file.name.toLowerCase() === 'index.html') {
+                        entryPoint = "index.html";
+                    } else {
+                        cacheAssets.push('./' + file.name);
+                    }
+                }
+
+                const manifest = {
+                    "name": appName,
+                    "short_name": appName.substring(0, 12),
+                    "start_url": entryPoint + "?v=" + dynamicVersion,
+                    "display": "standalone",
+                    "background_color": "#ffffff",
+                    "theme_color": themeColor,
+                    "version": dynamicVersion.toString(),
+                    "icons": [
+                        { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+                        { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+                    ]
+                };
+
+                const swCode = `// PWA Service Worker - Generated by it.adi.p Automator
+const CACHE_NAME = '${safeName}-cache-v${dynamicVersion}';
+const ASSETS = ${JSON.stringify(cacheAssets)};
+
+self.addEventListener('install', (event) => {
+    self.skipWaiting();
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    );
+});
+
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        caches.keys().then((keys) => Promise.all(
+            keys.map((k) => {
+                if (k !== CACHE_NAME) return caches.delete(k);
+            })
+        ))
+    );
+    return self.clients.claim();
+});
+
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        fetch(event.request).catch(() => caches.match(event.request))
+    );
+});`;
+
+                appFolder.file("manifest.json", JSON.stringify(manifest, null, 2));
+                appFolder.file("sw.js", swCode);
+
+                updateProgress(90, "Wrapping package...");
+
+                const blob = await zip.generateAsync({type:"blob"});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${safeName}_PWA_v${dynamicVersion}.zip`;
+                a.click();
+                
+                updateProgress(100, "Done!");
+                
+                // Celebration
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: [themeColor, '#10b981', '#ffffff']
+                });
+
+                showToast("Berhasil!", "Paket ZIP Anda siap diunduh.", "success");
+                
+                setTimeout(() => {
+                    progressWrapper.classList.add('hidden');
+                    updateProgress(0, "");
+                }, 3000);
+
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal!", "Gagal memproses file. Silakan coba lagi.", "error");
+                progressWrapper.classList.add('hidden');
+            }
+        }
+
+        function updateProgress(val, text) {
+            progressBar.style.width = val + "%";
+            percentText.textContent = text ? `${text} (${val}%)` : val + "%";
+        }
+
+        // PWA Install Tool Logic
+        let toolInstallPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            toolInstallPrompt = e;
+            document.getElementById('installToolBtn').classList.remove('hidden');
+        });
+
+        document.getElementById('installToolBtn').addEventListener('click', async () => {
+            if (toolInstallPrompt) {
+                toolInstallPrompt.prompt();
+                const { outcome } = await toolInstallPrompt.userChoice;
+                if (outcome === 'accepted') document.getElementById('installToolBtn').classList.add('hidden');
+                toolInstallPrompt = null;
+            }
+        });
+    </script>
+</body>
+</html>
+
+```
